@@ -139,11 +139,10 @@ function updateSliderValueFromMusic(value, filter) {
     slider.next().val(value);
 }
 
-function changeGrenzeValue(value){
+function changeGrenzeValue(value) {
     grenze = value;
 }
 
-// Start Render loop
 render();
 
 function updateValue(value, update) {
@@ -205,7 +204,7 @@ function changeBrightness(frame, length, value) {
 
 }
 
-function adjustContrast(frame,length, value) {
+function adjustContrast(frame, length, value) {
     var data = frame.data;
     var factor = (259 * (value + 255)) / (255 * (259 - value));
 
@@ -245,28 +244,21 @@ function clampColorValues(value) {
 }
 
 function getOtsuPictureFromFrame(frame, length, value) {
-    greyscalePicture(frame,0,0);
+    greyscalePicture(frame, 0, 0);
     let hisData = getHistogramData(frame);
-    //let threshold = otsu(hisData, frame.data.length/4);
-    //useOtsuThresholdOnPicture(frame, threshold);
 
     let thresholds = otsuMultipleThresholds(hisData, frame.data.length / 4, value)
-    //console.log(thresholds);
     useOtsuThresholdsOnPicture(frame, thresholds);
 }
 
 function getOtsuPictureFromFrameColored(frame, length, value) {
-    greyscalePicture(frame,0,0);
+    greyscalePicture(frame, 0, 0);
     let hisData = getHistogramData(frame);
-    //let threshold = otsu(hisData, frame.data.length/4);
-    //useOtsuThresholdOnPicture(frame, threshold);
-
     let thresholds = otsuMultipleThresholds(hisData, frame.data.length / 4, value)
-    //console.log(thresholds);
     useOtsuThresholdsOnPictureWithColor(frame, thresholds);
 }
 
-function greyscalePicture(frame,length,value) {
+function greyscalePicture(frame, length, value) {
     let l = frame.data.length / 4;
     for (let i = 0; i < l; i++) {
         let averageColour = (frame.data[i * 4 + 0] + frame.data[i * 4 + 1] + frame.data[i * 4 + 2]) / 3;
@@ -322,7 +314,7 @@ function fillColors() {
     farben[3] = [255, 0, 0]
     farben[4] = [255, 255, 255]
     for (let i = 5; i < farben.length; i++) {
-        farben[i]=[Math.floor(Math.random()*255),Math.floor(Math.random()*255),Math.floor(Math.random()*255)]
+        farben[i] = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)]
     }
     return farben
 }
@@ -367,10 +359,8 @@ function getHistogramData(frame) {
 }
 
 // https://gist.github.com/zz85/2ebc8e4da705dc3244200de564ab5557
-function otsu(histData /* Array of 256 greyscale values */, total /* Total number of pixels */, start, end) {
-    //console.log("otsu called with total: " + total + ", start:" + start + ", end:" + end);
+function otsu(histData, total, start, end) {
     let sum = 0;
-    //256 as end max!!!!
     for (let t = start; t < end; t++) sum += t * histData[t];
 
     let sumB = 0;
@@ -379,7 +369,6 @@ function otsu(histData /* Array of 256 greyscale values */, total /* Total numbe
 
     let varMax = 0;
     let threshold = 0;
-    //256 as end max!!!!
     for (let t = start; t < end; t++) {
         wB += histData[t];               // Weight Background
         if (wB == 0) continue;
@@ -401,7 +390,6 @@ function otsu(histData /* Array of 256 greyscale values */, total /* Total numbe
             threshold = t;
         }
     }
-    //console.log("new threshold:" + threshold + ", weightBackground:" + wB + "weightForeground:" + wF);
     return threshold;
 }
 
