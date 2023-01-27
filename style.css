@@ -1,0 +1,178 @@
+body {
+    width: auto;
+    margin: 0;
+    text-align: center;
+    background-color:black;
+    color: white;
+}
+
+#container {
+    background: #000;
+    width: 50%;
+    margin: 0 auto;
+}
+
+#canvas {
+    width: 50%;
+}
+
+
+#tutorial-content {
+    top: 40%;
+    left: 50%;
+    width: 50em;
+    height: 25em;
+    transform: translate(-50%, -50%);
+    border: 5px solid black;
+    border-radius: 10px;
+    background-color: darkslateblue;
+    position: fixed;
+    z-index: 1;
+}
+
+.tutorial-text {
+    padding: 20px;
+}
+
+#tutorial-close {
+    text-align: right;
+}
+#tutorial-close button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+}
+.videos {
+    margin-bottom: 50px;
+    margin-top: 50px;
+}
+
+.videos video{
+    margin: 10px 5px 10px 5px;
+}
+
+.settings {
+    width: 50%;
+    margin: 0 auto;
+}
+
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    margin: 10px;
+}
+
+.slidecontainer {
+    display: none;
+}
+
+.slidergroup {
+    margin-top: 25px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #04AA6D;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #04AA6D;
+    cursor: pointer;
+}
+
+
+.checkboxes {
+    width: 300px;
+}
+
+#select_video{
+    padding: 10px;
+}
+
+.slidecontainer input[type=range]{
+    width: 50%;
+    display: block;
+    margin: 10px auto 10px auto;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    background: gold;
+}
+
+.glow-on-hover {
+    width: 220px;
+    height: 50px;
+    border: none;
+    outline: none;
+    color: #fff;
+    background: #111;
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 10px;
+}
+
+.glow-on-hover:before {
+    content: '';
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    position: absolute;
+    top: -2px;
+    left:-2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 10px;
+}
+
+.glow-on-hover:active {
+    color: #000
+}
+
+.glow-on-hover:active:after {
+    background: transparent;
+}
+
+.glow-on-hover:hover:before {
+    opacity: 1;
+}
+
+.glow-on-hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+
+

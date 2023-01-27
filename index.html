@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <title>Video-Audio-Mixer</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+
+<!--
+
+TODO: Auswählbare Videos per Slider einfügen
+
+-->
+
+
+<header>
+    <h2>Video-Audio-Mixer</h2>
+    <button id="tutorial-button" class="glow-on-hover" onclick="changeVisibility()">How-To</button>
+</header>
+<main>
+    <div id="tutorial-content" style="display: none">
+        <div id="tutorial-close">
+            <button onclick="changeVisibility()">X</button>
+        </div>
+        <div class="tutorial-text">
+            Unser Programm funktioniert folgender Maßen:
+            Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
+            dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet
+            clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet,
+            consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat,
+            sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no
+            sea takimata sanctus est Lorem ipsum dolor sit amet.
+        </div>
+    </div>
+    <div class="select_video">
+        <label for="select_video">Video auswählen</label><br>
+        <select id="select_video" name="videos" size="1" onchange="updateVideo(this.value)">
+            <option value="vid1" selected>Tanzende Frauen</option>
+            <option value="vid2">Typ im Gefängnis</option>
+            <option value="vid3">Minions</option>
+            <option value="vid4">Gebimmel</option>
+        </select>
+    </div>
+    <div class="videos">
+        <video id="video-pure" src="media/vid1.mp4" width="500" height="400" controls>
+        </video>
+        <canvas id="canvas-processed" width="500" height="400"></canvas>
+    </div>
+    <!--
+    <div class="audio-upload">
+       <div class="upload-text">Hier beliebige MP3 hochladen</div>
+        <input type="file" id="myfile" name="myfile" />
+    </div>
+    -->
+
+    <div class="settings">
+        <div class="threshold">
+            Grenze
+            <input type="range" min="0" max="255" value="0" class="slider" id="grenze" oninput="this.nextElementSibling.value = this.value; changeGrenzeValue(this.value)">
+            <output>0</output>
+        </div>
+        <div class="checkbox-settings">
+                <div class="checkbox">
+                    <input type="checkbox" id="otsu" name="otsu-filter" onchange="changeFilterStatus(this.id)">
+                    <label for="otsu">Otsu-Filter aktivieren</label>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" id="color-otsu" name="color-otsu-filter"
+                           onchange="changeFilterStatus(this.id)">
+                    <label for="color-otsu">Color Otsu Filter aktivieren</label>
+                    <!--
+                    <input type="checkbox" id="color-otsu-music" name="color-otsu-filter-music" disabled
+                           onchange="changeSliderStatus(this.id,'color-otsu')">
+                    <label for="color-otsu-music">Filter über Musik steuern</label>
+                    -->
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" id="brightness" name="brightness-filter"
+                           onchange="changeFilterStatus(this.id)">
+                    <label for="brightness">Helligkeit Filter aktivieren</label>
+                    <input type="checkbox" id="brightness-music" name="brightness-filter-music" disabled
+                           onchange="changeSliderStatus(this.id,'brightness')">
+                    <label for="brightness-music">Filter über Musik steuern</label>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" id="contrast" name="contrast-filter" onchange="changeFilterStatus(this.id)">
+                    <label for="contrast">Kontrast Filter aktivieren</label>
+                    <input type="checkbox" id="contrast-music" name="contrast-filter-music" disabled
+                           onchange="changeSliderStatus(this.id,'contrast')">
+                    <label for="contrast-music">Filter über Musik steuern</label>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" id="greyscaling" name="greyscaling-filter"
+                           onchange="changeFilterStatus(this.id)">
+                    <label for="greyscaling">Greyscaling Filter aktivieren</label>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" id="invert" name="invert-filter" onchange="changeFilterStatus(this.id)">
+                    <label for="invert">Invert Filter aktivieren</label>
+                </div>
+            <div class="checkbox">
+                <input type="checkbox" id="chroma-key" name="chroma-key-filter" onchange="changeFilterStatus(this.id)">
+                <label for="otsu">Chroma Key aktivieren</label>
+            </div>
+        </div>
+
+        <div class="slidergroup">
+            <div class="slidecontainer" id="otsu-music-container">
+                Otsu Filter
+                <input type="range" min="1" max="5" value="1" class="slider" id="otsu-music-slider"
+                       oninput="this.nextElementSibling.value = this.value; updateValue(this.value,'otsu')">
+                <output>1</output>
+            </div>
+            <div class="slidecontainer" id="color-otsu-music-container">
+                Color-Otsu Filter
+                <input type="range" min="1" max="5" value="1" class="slider" id="color-otsu-music-slider"
+                       oninput="this.nextElementSibling.value = this.value;updateValue(this.value,'color-otsu')">
+                <output>1</output>
+            </div>
+            <div class="slidecontainer" id="brightness-music-container">
+                Helligkeit Filter
+                <input type="range" min="-100" max="100" value="0" class="slider" id="brightness-music-slider"
+                       oninput="this.nextElementSibling.value = this.value; updateValue(this.value,'brightness')">
+                <output>0</output>
+            </div>
+            <div class="slidecontainer" id="contrast-music-container">
+                Kontrast Filter
+                <input type="range" min="-255" max="255" value="0" class="slider" id="contrast-music-slider"
+                       oninput="this.nextElementSibling.value = this.value;updateValue(this.value,'contrast')">
+                <output>0</output>
+            </div>
+        </div>
+
+    </div>
+</main>
+<footer>
+
+</footer>
+</body>
+<script type="text/javascript" src="script.js"></script>
+</html>
