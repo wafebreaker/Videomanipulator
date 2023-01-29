@@ -2,11 +2,13 @@ var tutorial_visible = false;
 let videoPure = document.getElementById("video-pure");
 let canvasProcessed = document.getElementById("canvas-processed");
 let ctx = canvasProcessed.getContext("2d");
+
+//Einrichtung WebAudio API zur Analyse des Audios
 let audioContext = new AudioContext();
 let track = audioContext.createMediaElementSource(videoPure);
+//Filterung des Audiosignals um nur den relevanten Frequenzbereich zu betrachten
 let audiofilter = audioContext.createBiquadFilter();
-audiofilter.type = 'lowpass';
-audiofilter.frequency.value = 100;
+audiofilter.type = 'bandpass';
 audiofilter.connect(audioContext.destination);
 let analyser = audioContext.createAnalyser();
 track.connect(analyser).connect(audioContext.destination);
@@ -14,8 +16,9 @@ analyser.fftSize = 512;
 const bufferLength = analyser.frequencyBinCount;
 let dataArray = new Uint8Array(bufferLength);
 analyser.getByteFrequencyData(dataArray);
-console.log(audioContext.state);
-let grenze = 0;
+let border = 0;
+
+//Einstellungen für die Visuellen Filter
 let filters = [
     {
         name: 'brightness',
@@ -66,8 +69,12 @@ let filters = [
     },
 ];
 
+//Auffüllen der Farbwerte für den Otsu-Color-Filter
 let colors = fillColors();
 
+render();
+
+//Aktivierung der Bildfilter
 function changeFilterStatus(id) {
     let checkbox_music = $('#' + id + '-music');
     let checkbox_filter = $('#' + id);
@@ -93,6 +100,7 @@ function changeFilterStatus(id) {
 
 }
 
+//Einstellungen der Slider
 function changeSliderStatus(id, filter) {
     let checkbox = $('#' + id);
     let slider = $('#' + id + '-slider');
@@ -109,7 +117,7 @@ function changeSliderStatus(id, filter) {
 
 }
 
-
+//Anzeigen des Tutorials
 function changeVisibility() {
     var element = $("#tutorial-content");
     if (tutorial_visible) {
@@ -121,6 +129,7 @@ function changeVisibility() {
     }
 }
 
+//Änderung des angezeigten Videos
 function updateVideo(value) {
     let video = $('#video-pure');
     let canvas = $('#canvas-processed');
@@ -128,51 +137,70 @@ function updateVideo(value) {
     canvas.attr('width', video[0].width);
     canvas.attr('height', video[0].height);
     video.load();
-    console.log(value);
 }
 
+//Wert aus der Audioanalyse an den Bildfilter übergeben
 function updateSliderValueFromMusic(value, filter) {
     let slider = $('#' + filter + '-music-slider')
     slider.val(value);
     slider.next().val(value);
 }
 
-function changeGrenzeValue(value) {
-    grenze = value;
+//Setzen der Mittleren Frequenz des Filters aus dem Slider
+function changeMediumValue(value) {
+    audiofilter.frequency.value = value;
 }
 
-render();
+//Setzen des Q-Wertes des Filters zur Auswahl der Breite des Frequenzspektrums um die mittlere Frequenz aus dem Slider
+function changeBandwidth(value) {
+    audiofilter.Q.value = getQ(value);
+}
 
+//Setzen des Grenzwertes ab welchem der Bildfilter den Wert aus der Audioanalyse nutzt
+function changeBorderValue(value) {
+    border = value;
+}
+
+
+//Errechnet den Q Wert ausgehend von der Bandbreite
+function getQ(bandwidth) {
+    return Math.sqrt(Math.pow(2, bandwidth)) / (Math.pow(2, bandwidth) - 1)
+}
+
+//Wert für Bildfilter über Slider setzen
 function updateValue(value, update) {
     let index = filters.findIndex((obj => obj.name === update));
     filters[index].value = Math.floor(value);
 }
 
+//ruft die Render Funktion auf - regelt Zeitfluss
 function render() {
     renderPicture();
     requestAnimationFrame(render);
 }
 
+//wird zum Rendern der Bilder aufgerufen und Analyse des Audios
 function renderPicture() {
-    let tempMax = 0;
     ctx.drawImage(videoPure, 0, 0);
     let frame = ctx.getImageData(0, 0, 788, 568);
     let length = frame.data.length / 4;
 
+    //Audioanalyse
+    let tempMax = 0;
     analyser.getByteFrequencyData(dataArray);
-    for (let i = 1; i < 1 / 3 * dataArray.length; i++) {
+    for (let i = 1; i < dataArray.length; i++) {
         if (dataArray[i] > tempMax) {
-            tempMax = i;
+            tempMax = dataArray[i];
         }
     }
 
     for (let x = 0; x < filters.length; x++) {
         if (filters[x].enabled === true) {
             if (filters[x].onMusic === true) {
-                if (tempMax < grenze) {
+                if (tempMax < border) {
                     tempMax = 0;
                 }
-                filters[x].value = tempMax;
+                filters[x].value = tempMax / 4;
                 filters[x].function(frame, length, tempMax);
                 updateSliderValueFromMusic(tempMax, filters[x].name);
             } else {
@@ -183,7 +211,7 @@ function renderPicture() {
     ctx.putImageData(frame, 0, 0);
 }
 
-
+//Helligkeitsfilter - Punktfilter der das value auf jede Farbe jedes Pixels addiert
 function changeBrightness(frame, length, value) {
     let l = frame.data.length / 4;
     for (let i = 0; i < l; i++) {
@@ -199,9 +227,9 @@ function changeBrightness(frame, length, value) {
         frame.data[i * 4 + 1] = g;
         frame.data[i * 4 + 2] = b;
     }
-
 }
 
+//Kontrastfilter
 function adjustContrast(frame, length, value) {
     var data = frame.data;
     var factor = (259 * (value + 255)) / (255 * (259 - value));
@@ -211,12 +239,11 @@ function adjustContrast(frame, length, value) {
         data[i + 1] = factor * (data[i + 1] - 128) + 128;
         data[i + 2] = factor * (data[i + 2] - 128) + 128;
     }
-
     return frame;
 }
 
 
-//von dozent
+//Invertiert Bildwerte - Methode wurden im Rahmen des Moduls B54.1 MM Audio- und Videotechnik an der HTW Berlin zur Verfügung gestellt
 function invertFilter(frame, length, value) {
     for (let i = 0; i < length; i++) {
         frame.data[i * 4 + 0] = 255 - frame.data[i * 4 + 0];
@@ -225,7 +252,7 @@ function invertFilter(frame, length, value) {
     }
 }
 
-//von dozent
+//Wendet Chroma-Key Filter an - Methode wurden im Rahmen des Moduls B54.1 MM Audio- und Videotechnik an der HTW Berlin zur Verfügung gestellt
 function chromaKeyingFilter(frame, length, value) {
     for (let i = 0; i < length; i++) {
         frame.data[i * 4 + 3] = ((frame.data[i * 4 + 0] +
@@ -234,6 +261,7 @@ function chromaKeyingFilter(frame, length, value) {
     }
 }
 
+//Redudziert Farbwerte auf 255 bzw. 0, wenn entsprechender Wert über- oder unterschritten wird
 function clampColorValues(value) {
     let v = value;
     if (v > 255) v = 255;
@@ -241,14 +269,15 @@ function clampColorValues(value) {
     return v;
 }
 
+//Otsu-Filter - value bestimmt in wieviel Grauwerte Bild zerlegt werden soll -> 2^value=Grauwerte
 function getOtsuPictureFromFrame(frame, length, value) {
     greyscalePicture(frame, 0, 0);
     let hisData = getHistogramData(frame);
-
     let thresholds = otsuMultipleThresholds(hisData, frame.data.length / 4, value)
     useOtsuThresholdsOnPicture(frame, thresholds);
 }
 
+//Otsu-Farb-Filter - value bestimmt in wieviel Farben Bild zerlegt werden soll -> 2^value=Farben
 function getOtsuPictureFromFrameColored(frame, length, value) {
     greyscalePicture(frame, 0, 0);
     let hisData = getHistogramData(frame);
@@ -256,6 +285,7 @@ function getOtsuPictureFromFrameColored(frame, length, value) {
     useOtsuThresholdsOnPictureWithColor(frame, thresholds);
 }
 
+//Wandelt Bild in Grauwerte um
 function greyscalePicture(frame, length, value) {
     let l = frame.data.length / 4;
     for (let i = 0; i < l; i++) {
@@ -266,7 +296,7 @@ function greyscalePicture(frame, length, value) {
     }
 }
 
-// value = ((this part without area after point)old value/shrinkValue)* shrinkValue
+//Senkt die Anzahl an Farbwerten -> wird zur Zeit nicht angewendet
 function shrinkColourValues(frame, length, shrinkValue) {
     let l = frame.data.length / 4;
     for (let i = 0; i < l; i++) {
@@ -280,6 +310,7 @@ function shrinkColourValues(frame, length, shrinkValue) {
     }
 }
 
+//Hilfsmethode Otsu-Filter - wendet Thresholds auf Bild an
 function useOtsuThresholdsOnPicture(frame, thresholds) {
     let l = frame.data.length / 4;
     for (let i = 0; i < l; i++) {
@@ -292,6 +323,7 @@ function useOtsuThresholdsOnPicture(frame, thresholds) {
     }
 }
 
+//Hilfsmethode Otsu-Farb-Filter- wendet Thresholds für Farben auf Bild an
 function useOtsuThresholdsOnPictureWithColor(frame, thresholds) {
     let l = frame.data.length / 4;
     for (let i = 0; i < l; i++) {
@@ -304,6 +336,7 @@ function useOtsuThresholdsOnPictureWithColor(frame, thresholds) {
     }
 }
 
+//Hilfsmethode Otsu-Farb-Filter - füllt Array mit Farben für Filter
 function fillColors() {
     let farben = new Array(32)
     farben[0] = [0, 0, 0]
@@ -317,6 +350,7 @@ function fillColors() {
     return farben
 }
 
+//Hilfsmethode Otsu-Farb-Filter - erhält Threshold und liefert Farbe zurück
 function getThresholdColorWithValueForColor(value, thresholds) {
     for (let i = 1; i < thresholds.length; i++) {
         if (value >= thresholds[i - 1] && value < thresholds[i]) return colors[i - 1];
@@ -324,6 +358,7 @@ function getThresholdColorWithValueForColor(value, thresholds) {
     return colors[length - 1];
 }
 
+//Hilfsmethode Otsu-Filter - erhält Threshold und liefert Grauwert zurück
 function getThresholdColorForValue(value, thresholds) {
     for (let i = 1; i < thresholds.length; i++) {
         if (value >= thresholds[i - 1] && value < thresholds[i]) return thresholds[i - 1];
@@ -331,19 +366,7 @@ function getThresholdColorForValue(value, thresholds) {
     return thresholds[length - 1];
 }
 
-function useOtsuThresholdOnPicture(frame, threshold) {
-    let l = frame.data.length / 4;
-    for (let i = 0; i < l; i++) {
-
-        let averageColour = frame.data[i * 4 + 0];
-        if (averageColour < threshold) averageColour = 0;
-        else averageColour = 255;
-        frame.data[i * 4 + 0] = averageColour;
-        frame.data[i * 4 + 1] = averageColour;
-        frame.data[i * 4 + 2] = averageColour;
-    }
-}
-
+//Hilfsmethode Otsu - liefert Histogram für Bildpunkte
 function getHistogramData(frame) {
     let histData = new Array(256);
     let l = frame.data.length / 4;
@@ -356,7 +379,11 @@ function getHistogramData(frame) {
     return histData;
 }
 
-// https://gist.github.com/zz85/2ebc8e4da705dc3244200de564ab5557
+/*
+Hilfmethode - Otsu Algorithmus - gibt Threshold für bestimmten Bereich zurück
+start/end geben Bereich an
+angepasster Algorithmus nach https://gist.github.com/zz85/2ebc8e4da705dc3244200de564ab5557
+ */
 function otsu(histData, total, start, end) {
     let sum = 0;
     for (let t = start; t < end; t++) sum += t * histData[t];
@@ -391,15 +418,19 @@ function otsu(histData, total, start, end) {
     return threshold;
 }
 
-// only uneven threshold counts
-function otsuMultipleThresholds(hisData, total, debth) {
+/*
+Hilfsmethode otsu - ruft Otsu Algorithmus für bestimmte Histogrammbereiche auf
+gibt Thresholds zurück
+Depth gibt an wie oft Algorithmus aufgerufen wird, 2^depth=threshold_count
+ */
+function otsuMultipleThresholds(hisData, total, depth) {
     // call otsu get treshold
     let thresholds = [];
     thresholds.push(0);
     thresholds.push(256);
-    if (debth == 0) thresholds.push(callOtsuForBorders(hisData, thresholds)[0]);
+    if (depth == 0) thresholds.push(callOtsuForBorders(hisData, thresholds)[0]);
 
-    for (let i = 0; i < debth; i++) {
+    for (let i = 0; i < depth; i++) {
         let foundValues = callOtsuForBorders(hisData, thresholds);
         for (let j = 0; j < foundValues.length; j++) {
             thresholds.push(foundValues[j]);
@@ -418,6 +449,7 @@ function otsuMultipleThresholds(hisData, total, debth) {
     return thresholds;
 }
 
+//Hilfsmethode Otsu - ruft Otsu Algorithmus auf
 function callOtsuForBorders(hisData, thresholds) {
     let foundThresholds = [];
     for (let i = 1; i < thresholds.length; i++) {
@@ -430,6 +462,7 @@ function callOtsuForBorders(hisData, thresholds) {
     return foundThresholds;
 }
 
+//Hilfsmethode Otsu - gibt Pixelanzahl von Histogramm in bestimmten Bereich zurück
 function countPixels(hisData, start, end) {
     let count = 0;
     for (let i = start; i < end; i++) {

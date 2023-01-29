@@ -3,7 +3,7 @@
 
 ## Installation
 
-Lade den kompletten Sourcecode herunter und öffne die index.html Dabei. Kein Server notwendig, einfach lokal installieren.
+Lade den kompletten Sourcecode herunter und öffne die index.html dabei. Kein Server notwendig, einfach lokal installieren. 
 
 
 ## Features
@@ -103,7 +103,7 @@ function greyscalePicture(frame,length,value) {
 
 ## Anleitung
 
-Du hast 4 berschiedenen Videos aus denen du auswählen kannst. 
+Du hast 4 verschiedenen Videos aus denen du auswählen kannst. 
 Der Slider 'Grenze' bestimmt ab welchem Wert der Filter auf das Video angewendet wird. Du kannst beliebig viele Filter aktivieren und auch wieder deaktivieren.
 Einige Filter kannst du manuell über einen Slider steuern oder aber den Filter über den Ton des Videos steuern. Hierfüt musst du nur die zugewiesene Checkbox aktivieren.
 

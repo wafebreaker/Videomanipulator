@@ -50,10 +50,24 @@
 
     <div class="settings">
         <div class="threshold">
-            Grenze
-            <input type="range" min="0" max="255" value="0" class="slider" id="grenze"
-                   oninput="this.nextElementSibling.value = this.value; changeGrenzeValue(this.value)">
-            <output>0</output>
+            <div>
+                Mittlere Frequenz
+                <input type="range" min="50" max="20000" value="350" step="50" class="slider" id="medium-frequency"
+                       oninput="this.nextElementSibling.value = this.value; changeMediumValue(this.value)">
+                <output>350</output>
+            </div>
+            <div>
+                Bandbreite
+                <input type="range" min="1" max="20" value="1" class="slider" id="bandwidth"
+                       oninput="this.nextElementSibling.value = this.value; changeBandwidth(this.value)">
+                <output>1</output>
+            </div>
+            <div>
+                Grenze
+                <input type="range" min="1" max="255" value="1" class="slider" id="border"
+                       oninput="this.nextElementSibling.value = this.value; changeBorderValue(this.value)">
+                <output>1</output>
+            </div>
         </div>
         <div class="checkbox-settings">
             <div class="checkbox">
