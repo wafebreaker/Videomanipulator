@@ -2,11 +2,13 @@ var tutorial_visible = false;
 let videoPure = document.getElementById("video-pure");
 let canvasProcessed = document.getElementById("canvas-processed");
 let ctx = canvasProcessed.getContext("2d");
+
+//Einrichtung WebAudio API zur Analyse des Audios
 let audioContext = new AudioContext();
 let track = audioContext.createMediaElementSource(videoPure);
+//Filterung des Audiosignals um nur den relevanten Frequenzbereich zu betrachten
 let audiofilter = audioContext.createBiquadFilter();
-audiofilter.type = 'lowpass';
-audiofilter.frequency.value = 100;
+audiofilter.type = 'bandpass';
 audiofilter.connect(audioContext.destination);
 let analyser = audioContext.createAnalyser();
 track.connect(analyser).connect(audioContext.destination);
@@ -14,8 +16,9 @@ analyser.fftSize = 512;
 const bufferLength = analyser.frequencyBinCount;
 let dataArray = new Uint8Array(bufferLength);
 analyser.getByteFrequencyData(dataArray);
-console.log(audioContext.state);
-let grenze = 0;
+let border = 0;
+
+//Einstellungen für die Visuellen Filter
 let filters = [
     {
         name: 'brightness',
@@ -66,10 +69,10 @@ let filters = [
     },
 ];
 
+//Auffüllen der Farbwerte für den Otsu-Color-Filter
 let colors = fillColors();
 
-console.log(colors);
-
+//Aktivierung der Bildfilter
 function changeFilterStatus(id) {
     let checkbox_music = $('#' + id + '-music');
     let checkbox_filter = $('#' + id);
@@ -95,6 +98,7 @@ function changeFilterStatus(id) {
 
 }
 
+//Einstellungen der Slider
 function changeSliderStatus(id, filter) {
     let checkbox = $('#' + id);
     let slider = $('#' + id + '-slider');
@@ -112,6 +116,7 @@ function changeSliderStatus(id, filter) {
 }
 
 
+//Anzeigen des Tutorials
 function changeVisibility() {
     var element = $("#tutorial-content");
     if (tutorial_visible) {
@@ -123,6 +128,7 @@ function changeVisibility() {
     }
 }
 
+//Änderung des angezeigten Videos
 function updateVideo(value) {
     let video = $('#video-pure');
     let canvas = $('#canvas-processed');
@@ -130,17 +136,26 @@ function updateVideo(value) {
     canvas.attr('width', video[0].width);
     canvas.attr('height', video[0].height);
     video.load();
-    console.log(value);
 }
 
+//Wert aus der Audioanalyse an den Bildfilter übergeben
 function updateSliderValueFromMusic(value, filter) {
     let slider = $('#' + filter + '-music-slider')
     slider.val(value);
     slider.next().val(value);
 }
 
-function changeGrenzeValue(value) {
-    grenze = value;
+
+function changeMediumValue(value) {
+    audiofilter.frequency.value = value;
+}
+
+function changeBorderValue(value) {
+    border = value;
+}
+
+function changeBandwidth(value) {
+    audiofilter.Q.value = getQ(value);
 }
 
 render();
@@ -162,19 +177,22 @@ function renderPicture() {
     let length = frame.data.length / 4;
 
     analyser.getByteFrequencyData(dataArray);
-    for (let i = 1; i < 1 / 3 * dataArray.length; i++) {
+    for (let i = 1; i < dataArray.length; i++) {
         if (dataArray[i] > tempMax) {
-            tempMax = i;
+            tempMax = dataArray[i];
         }
     }
+
+    console.log(dataArray);
+    console.log(tempMax);
 
     for (let x = 0; x < filters.length; x++) {
         if (filters[x].enabled === true) {
             if (filters[x].onMusic === true) {
-                if (tempMax < grenze) {
+                if (tempMax < border) {
                     tempMax = 0;
                 }
-                filters[x].value = tempMax;
+                filters[x].value = tempMax/4;
                 filters[x].function(frame, length, tempMax);
                 updateSliderValueFromMusic(tempMax, filters[x].name);
             } else {
@@ -185,6 +203,9 @@ function renderPicture() {
     ctx.putImageData(frame, 0, 0);
 }
 
+function getQ(bandwidth) {
+    return Math.sqrt(Math.pow(2, bandwidth)) / (Math.pow(2, bandwidth) - 1)
+}
 
 function changeBrightness(frame, length, value) {
     let l = frame.data.length / 4;
