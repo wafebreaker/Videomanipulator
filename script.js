@@ -68,8 +68,6 @@ let filters = [
 
 let colors = fillColors();
 
-console.log(colors);
-
 function changeFilterStatus(id) {
     let checkbox_music = $('#' + id + '-music');
     let checkbox_filter = $('#' + id);
