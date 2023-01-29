@@ -24,7 +24,7 @@ body {
     top: 40%;
     left: 50%;
     width: 50em;
-    height: 25em;
+    height: fit-content;
     transform: translate(-50%, -50%);
     border: 5px solid black;
     border-radius: 10px;
@@ -45,6 +45,11 @@ body {
     border: none;
     cursor: pointer;
     font-size: 24px;
+}
+
+
+.select_video {
+    margin-top: 50px;
 }
 .videos {
     margin-bottom: 50px;

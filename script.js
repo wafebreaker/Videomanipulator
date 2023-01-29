@@ -72,7 +72,6 @@ let filters = [
 //Auffüllen der Farbwerte für den Otsu-Color-Filter
 let colors = fillColors();
 
-
 render();
 
 //Aktivierung der Bildfilter
