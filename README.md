@@ -3,7 +3,7 @@
 
 ## Installation
 
-Lade den kompletten Sourcecode herunter und öffne die index.html dabei. Kein Server notwendig, einfach lokal installieren. 
+Lade den kompletten Sourcecode herunter und öffne die index.html dabei. Das Programm startet automatisch im Internet Browser. Kein Server notwendig, keine installation notwendig. 
 
 
 ## Features
